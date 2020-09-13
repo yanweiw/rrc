@@ -85,8 +85,17 @@ class Block:
             halfExtents=[half_size] * 3,
             **self._kwargs,
         )
+
+        self.visual_id = pybullet.createVisualShape(
+            shapeType=pybullet.GEOM_BOX, 
+            halfExtents=[half_size] * 3, 
+            rgbaColor=[1, 1, 0, 0.5],
+            **self._kwargs,
+        )
+
         self.block = pybullet.createMultiBody(
             baseCollisionShapeIndex=self.block_id,
+            baseVisualShapeIndex=self.visual_id,
             basePosition=position,
             baseOrientation=orientation,
             baseMass=mass,
