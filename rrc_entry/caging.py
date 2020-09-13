@@ -75,38 +75,26 @@ class Cage:
     def cage(self, gain=0.1):
         # calculate triangle center to cube center vector
         cube_position = np.array(self.cube.get_state()[0])
-        # print('cube position', cube_position)
         marker_center = self.marker_position.mean(axis=0)
-        # print('marker center', marker_center)
         center_to_cube = cube_position - marker_center # center refers to marker center
-        # print('center_to_cube', center_to_cube)
         # calculate marker-shrink-towards-center vector
         marker_to_center = marker_center - self.marker_position
-        # print('marker_to_center\n', marker_to_center)
         marker_change = (marker_to_center + 5*center_to_cube) * gain
-        # print('marker_change\n', marker_change)
-        # print('marker_position\n', self.marker_position)
         desired_marker_position = self.marker_position + marker_change
 
         # desired_marker_position can have some markers outside of workspace
-        # print('desired_marker_position\n', desired_marker_position)
         marker_norms = np.linalg.norm(desired_marker_position[:, :2], axis=1)
-        # print('marker_norms', marker_norms)
         max_idx = marker_norms.argmax()
         if marker_norms[max_idx] > self.workspace_radius:
             furthest_marker = desired_marker_position[max_idx]
-            # print('furthest_marker', furthest_marker)
             cube_to_furthest = furthest_marker - cube_position
             a = np.linalg.norm(cube_to_furthest)**2
             b = 2 * cube_position.dot(cube_to_furthest)
             c = np.linalg.norm(cube_position)**2 - self.workspace_radius**2
             clipping_factor1 = (-b + np.sqrt(b**2 - 4*a*c)) / (2*a)
             clipping_factor2 = (-b - np.sqrt(b**2 - 4*a*c)) / (2*a)
-            # print('clipping_factors', clipping_factor1, clipping_factor2)
             cube_to_marker = desired_marker_position - cube_position
-            # print('original cube to desired marker\n', cube_to_marker)
             desired_marker_position = cube_position + cube_to_marker * clipping_factor1
-            # print('new desired_marker_position\n', desired_marker_position)
 
         # recalculate marker change due to clippng, and apply gain
         marker_change = (desired_marker_position - self.marker_position)
